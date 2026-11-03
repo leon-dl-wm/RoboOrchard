@@ -59,15 +59,15 @@ windows:
     layout: tiled
     panes:
       - shell_command:  # left wrist cameras
-        - CMD="ros2 launch realsense2_camera rs_launch.py camera_namespace:='agilex' camera_name:='left_camera' align_depth.enable:=true initial_reset:=true diagnostics_period:=2.0 serial_no:=\"'$LEFT_WRIST_CAMERA_SERIAL_NO'\" depth_module.depth_profile:=640x480x30  depth_module.color_profile:=640x480x30"
+        - CMD="ros2 launch realsense2_camera rs_launch.py camera_namespace:='agilex' camera_name:='left_camera' align_depth.enable:=true initial_reset:=true diagnostics_period:=2.0 serial_no:=\"'$LEFT_WRIST_CAMERA_SERIAL_NO'\" depth_module.depth_profile:=640x360x15  depth_module.color_profile:=640x480x15"
         - history -s "$CMD"
         - eval "$CMD"
       - shell_command:  # right wrist cameras
-        - CMD="ros2 launch realsense2_camera rs_launch.py camera_namespace:='agilex' camera_name:='right_camera' align_depth.enable:=true initial_reset:=true diagnostics_period:=2.0 serial_no:=\"'$RIGHT_WRIST_CAMERA_SERIAL_NO'\" depth_module.depth_profile:=640x480x30  depth_module.color_profile:=640x480x30"
+        - CMD="ros2 launch realsense2_camera rs_launch.py camera_namespace:='agilex' camera_name:='right_camera' align_depth.enable:=true initial_reset:=true diagnostics_period:=2.0 serial_no:=\"'$RIGHT_WRIST_CAMERA_SERIAL_NO'\" depth_module.depth_profile:=640x360x15  depth_module.color_profile:=640x480x15"
         - history -s "$CMD"
         - eval "$CMD"
       - shell_command:  # env center cameras
-        - CMD="ros2 launch realsense2_camera rs_launch.py camera_namespace:='agilex' camera_name:='middle_camera' align_depth.enable:=true initial_reset:=true diagnostics_period:=2.0 serial_no:=\"'$ENV_CENTER_CAMERA_SERIAL_NO'\" depth_module.depth_profile:=640x480x30  depth_module.color_profile:=640x480x30"
+        - CMD="ros2 launch realsense2_camera rs_launch.py camera_namespace:='agilex' camera_name:='middle_camera' align_depth.enable:=true initial_reset:=true diagnostics_period:=2.0 serial_no:=\"'$ENV_CENTER_CAMERA_SERIAL_NO'\" depth_module.depth_profile:=640x360x15  rgb_camera.color_profile:=640x360x15"
         - history -s "$CMD"
         - eval "$CMD"
 
