@@ -7,6 +7,7 @@ FULL_VERSION
 VERSION_POSTFIX
 *.egg-info/
 .venv/
+venv/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/

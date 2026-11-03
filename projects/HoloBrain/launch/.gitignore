@@ -1,5 +1,2 @@
-docker.sh
-launch.yaml
-
 !templates/docker.sh
 !templates/launch.yaml

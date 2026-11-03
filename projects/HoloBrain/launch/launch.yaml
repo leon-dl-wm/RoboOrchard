@@ -1,0 +1,125 @@
+session_name: holobrain
+options:
+  mouse: on
+  history-limit: 100000
+
+environment:
+  DOCKER_NAME: holobrain
+  DOCKER_VENV_PATH: /home/ww_ws/RoboOrchard/venv/robot-venv
+  DOCKER_ROBO_ORCHARD_PATH: /home/ww_ws/RoboOrchard
+  # camera serial number.
+  LEFT_WRIST_CAMERA_SERIAL_NO: "260322275229"
+  RIGHT_WRIST_CAMERA_SERIAL_NO: "260322271228"
+  ENV_CENTER_CAMERA_SERIAL_NO: "260922300973"
+  # Default HoloBrain launch scripts target ALOHA. Set to "pico" to use
+  # teleop/pico_dagger.sh and global Control Manager services.
+  TELEOP_SOURCE: "aloha"
+  # Set to "true" with TELEOP_SOURCE: "pico" to launch Piper + Hexfellow.
+  WITH_HEXFELLOW: "false"
+  # Required by both Pico teleop scripts.
+  PIPER_URDF_PATH: ""
+  # Required when WITH_HEXFELLOW is "true" (vendor device addresses).
+  CHASSIS_URL: ""
+  LIFT_URL: ""
+
+shell_command_before:
+  - docker exec -it
+    -e TERM=xterm-256color
+    -e DOCKER_VENV_PATH="$DOCKER_VENV_PATH"
+    -e DOCKER_ROBO_ORCHARD_PATH="$DOCKER_ROBO_ORCHARD_PATH"
+    -e LEFT_WRIST_CAMERA_SERIAL_NO="$LEFT_WRIST_CAMERA_SERIAL_NO"
+    -e RIGHT_WRIST_CAMERA_SERIAL_NO="$RIGHT_WRIST_CAMERA_SERIAL_NO"
+    -e ENV_CENTER_CAMERA_SERIAL_NO="$ENV_CENTER_CAMERA_SERIAL_NO"
+    -e TELEOP_SOURCE="$TELEOP_SOURCE"
+    -e WITH_HEXFELLOW="$WITH_HEXFELLOW"
+    -e PIPER_URDF_PATH="$PIPER_URDF_PATH"
+    -e CHASSIS_URL="$CHASSIS_URL"
+    -e LIFT_URL="$LIFT_URL"
+    $DOCKER_NAME /bin/bash
+  - source $DOCKER_VENV_PATH/bin/activate && source $DOCKER_ROBO_ORCHARD_PATH/ros2_package/install/setup.bash
+  - git config --global --add safe.directory $DOCKER_ROBO_ORCHARD_PATH
+windows:
+  - window_name: basic service
+    layout: tiled
+    panes:
+      - shell_command:  # file_server
+        - CMD="robo-orchard file-server --port 8000 --dir /"
+        - history -s "$CMD"
+        - eval "$CMD"
+      - shell_command:  # foxglove bridge
+        - CMD="ros2 launch foxglove_bridge foxglove_bridge_launch.xml"
+        - history -s "$CMD"
+        - eval "$CMD"
+      - shell_command:  # ros bridge server
+        - CMD="ros2 launch rosbridge_server rosbridge_websocket_launch.xml call_services_in_new_thread:=true"
+        - history -s "$CMD"
+        - eval "$CMD"
+
+  - window_name: camera service
+    layout: tiled
+    panes:
+      - shell_command:  # left wrist cameras
+        - CMD="ros2 launch realsense2_camera rs_launch.py camera_namespace:='agilex' camera_name:='left_camera' align_depth.enable:=true initial_reset:=true diagnostics_period:=2.0 serial_no:=\"'$LEFT_WRIST_CAMERA_SERIAL_NO'\" depth_module.depth_profile:=640x480x30  depth_module.color_profile:=640x480x30"
+        - history -s "$CMD"
+        - eval "$CMD"
+      - shell_command:  # right wrist cameras
+        - CMD="ros2 launch realsense2_camera rs_launch.py camera_namespace:='agilex' camera_name:='right_camera' align_depth.enable:=true initial_reset:=true diagnostics_period:=2.0 serial_no:=\"'$RIGHT_WRIST_CAMERA_SERIAL_NO'\" depth_module.depth_profile:=640x480x30  depth_module.color_profile:=640x480x30"
+        - history -s "$CMD"
+        - eval "$CMD"
+      - shell_command:  # env center cameras
+        - CMD="ros2 launch realsense2_camera rs_launch.py camera_namespace:='agilex' camera_name:='middle_camera' align_depth.enable:=true initial_reset:=true diagnostics_period:=2.0 serial_no:=\"'$ENV_CENTER_CAMERA_SERIAL_NO'\" depth_module.depth_profile:=640x480x30  depth_module.color_profile:=640x480x30"
+        - history -s "$CMD"
+        - eval "$CMD"
+
+  - window_name: data service
+    layout: tiled
+    shell_command_before:
+      - cd $DOCKER_ROBO_ORCHARD_PATH/projects/HoloBrain
+    panes:
+      - shell_command:  # image encoder
+        - CMD="bash data/encoder/launch_image_encoder.sh"
+        - history -s "$CMD"
+        - eval "$CMD"
+      - shell_command:  # depth encoder
+        - CMD="bash data/encoder/launch_depth_encoder.sh"
+        - history -s "$CMD"
+        - eval "$CMD"
+      - shell_command:  # tf publisher
+        - CMD="bash data/tf/launch_tf_publisher.sh"
+        - history -s "$CMD"
+        - eval "$CMD"
+      - shell_command:  # data recorder service
+        - CMD="bash data/recorder/launch_data_recorder_service.sh"
+        - history -s "$CMD"
+        - eval "$CMD"
+
+  - window_name: robot control
+    layout: tiled
+    shell_command_before:
+      - cd $DOCKER_ROBO_ORCHARD_PATH/projects/HoloBrain
+    panes:
+      - shell_command:  # robot teleop
+        - 'if [ "$TELEOP_SOURCE" = "pico" ]; then bash /opt/apps/roboticsservice/runService.sh; fi'
+        - CMD='case "$TELEOP_SOURCE:$WITH_HEXFELLOW" in pico:true) SCRIPT=hexfellow_pico_dagger.sh ;; pico:false) SCRIPT=pico_dagger.sh ;; aloha:false) SCRIPT=aloha_dagger.sh ;; *) echo "Unsupported TELEOP_SOURCE/WITH_HEXFELLOW combination" >&2; false ;; esac && bash teleop/rename-can.sh && bash "teleop/$SCRIPT"'
+        - history -s "$CMD"
+        - eval "$CMD"
+
+  - window_name: app
+    layout: tiled
+    shell_command_before:
+      - cd $DOCKER_ROBO_ORCHARD_PATH/projects/HoloBrain
+    panes:
+      - shell_command:  # App
+        - CMD="bash app/launch_inference_app.sh"
+        - history -s "$CMD"
+        - eval "$CMD"
+
+  - window_name: calibration
+    layout: tiled
+    shell_command_before:
+      - cd $DOCKER_ROBO_ORCHARD_PATH/projects/HoloBrain
+    panes:
+      - shell_command:
+        - CMD="bash handeye_calib/launch_handeye_calib.sh"
+        - history -s "$CMD"
+        - eval "$CMD"
