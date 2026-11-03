@@ -88,8 +88,6 @@
 ## Git Workflow
 
 - Follow `CONTRIBUTING.md` for commit and MR/PR formatting.
-- Before performing Git operations or preparing commit or MR/PR content, read
-  `.agents/instructions/git.md`.
 
 ## Runtime and Inference App
 
